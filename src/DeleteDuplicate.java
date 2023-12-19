@@ -6,6 +6,9 @@ import java.io.InputStream;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Scanner;
 
 public class DeleteDuplicate {
     ArrayList<File> name = new ArrayList<>();
@@ -45,11 +48,50 @@ public class DeleteDuplicate {
         }
     }
     public void delete(){
-        System.out.println("开始删除");
-        for (int i = 0; i < deleteNum.size(); i++){
-            System.out.println("删除"+name.get(deleteNum.get(i)).getName());
-            name.get(deleteNum.get(i)).delete();
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.println("开始删除重复文件");
+
+        // 使用Map来保存重复的文件，键为MD5，值为文件列表
+        Map<String, ArrayList<File>> duplicatesMap = new HashMap<>();
+
+        for (int i = 0; i < deleteNum.size(); i++) {
+            int index = deleteNum.get(i);
+            File duplicateFile = name.get(index);
+            String md5 = MD5name.get(index);
+
+            if (!duplicatesMap.containsKey(md5)) {
+                duplicatesMap.put(md5, new ArrayList<>());
+            }
+
+            duplicatesMap.get(md5).add(duplicateFile);
         }
+
+        // 列出重复文件并确认
+        for (Map.Entry<String, ArrayList<File>> entry : duplicatesMap.entrySet()) {
+            String md5 = entry.getKey();
+            ArrayList<File> duplicateFiles = entry.getValue();
+
+            System.out.println("MD5: " + md5);
+            for (File file : duplicateFiles) {
+                System.out.println("文件：" + file.getName() + "\t大小：" + file.length() + " 字节");
+            }
+
+            System.out.println("是否删除这些文件？ (Y/N): ");
+            String response = scanner.nextLine().trim().toUpperCase();
+
+            if ("Y".equals(response)) {
+                // 保留一个文件，删除其他重复文件
+                for (File fileToDelete : duplicateFiles) {
+                    System.out.println("正在删除文件：" + fileToDelete.getName());
+                    fileToDelete.delete();
+                }
+            } else {
+                System.out.println("未删除文件：" + duplicateFiles.get(0).getName());
+            }
+        }
+
+        scanner.close();
     }
 
 
